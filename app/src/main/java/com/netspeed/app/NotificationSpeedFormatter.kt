@@ -4,9 +4,9 @@ import kotlin.math.roundToLong
 
 /**
  * Formats the individually measured traffic directions for the notification.
- * TrafficStats counts bytes; TrafficRateCalculator converts to decimal kb/s.
+ * TrafficStats counts bytes; TrafficRateCalculator converts to decimal Kb/s.
  * Display very low rates in b/s so a value such as 624 b/s does not
- * misleadingly appear as 1 kb/s or 0 kb/s.
+ * misleadingly appear as 1 Kb/s or 0 Kb/s.
  */
 internal object NotificationSpeedFormatter {
     fun format(rates: TransferRates): String =
@@ -18,7 +18,7 @@ internal object NotificationSpeedFormatter {
             return "${(kbitsPerSecond * 1_000).roundToLong()} b/s"
         }
         if (kbitsPerSecond < 1_000.0) {
-            return "${scaledNumber(kbitsPerSecond)} kb/s"
+            return "${scaledNumber(kbitsPerSecond)} Kb/s"
         }
         return "${scaledNumber(kbitsPerSecond / 1_000)} Mb/s"
     }
