@@ -129,30 +129,36 @@ class SpeedService : Service() {
         val canvas = Canvas(bitmap)
         canvas.scale(size / 24f, size / 24f)
 
-        // Bold, larger first line: 17.5dp instead of 13dp. Fit long
-        // numbers to the available width without clipping.
+        // A status icon is only 24dp high. Reserve a fixed top line for
+        // the bold number, with real blank space before the arrow/unit row.
+        // Fit by the rendered glyph bounds as well as the text width:
+        // a text baseline alone is not a reliable measure of padding.
         iconPaint.textSize = 17.5f
-        val width = iconPaint.measureText(reading.number)
-        if (width > 22f) iconPaint.textSize *= 22f / width
-        canvas.drawText(reading.number, 12f, 15.5f, iconPaint)
+        val numberBounds = android.graphics.Rect()
+        iconPaint.getTextBounds(reading.number, 0, reading.number.length, numberBounds)
+        val textWidth = iconPaint.measureText(reading.number).coerceAtLeast(1f)
+        val glyphHeight = numberBounds.height().coerceAtLeast(1).toFloat()
+        iconPaint.textSize *= minOf(1f, 22f / textWidth, 12f / glyphHeight)
+        iconPaint.getTextBounds(reading.number, 0, reading.number.length, numberBounds)
+        canvas.drawText(reading.number, 12f, 0.7f - numberBounds.top, iconPaint)
 
-        // Draw the arrow as strokes rather than a text glyph; arrow fonts
-        // differ across manufacturers and may become illegible when scaled.
+        // A slightly longer arrow (6.8dp shaft vs 5.5dp before), drawn
+        // alongside the unit. The second row starts below the number.
         when (reading.direction) {
             SpeedDirection.DOWNLOAD -> {
-                canvas.drawLine(6.5f, 16.5f, 6.5f, 22f, arrowPaint)
-                canvas.drawLine(3.8f, 19.3f, 6.5f, 22f, arrowPaint)
-                canvas.drawLine(9.2f, 19.3f, 6.5f, 22f, arrowPaint)
+                canvas.drawLine(6.2f, 16f, 6.2f, 22.8f, arrowPaint)
+                canvas.drawLine(3.5f, 20f, 6.2f, 22.8f, arrowPaint)
+                canvas.drawLine(8.9f, 20f, 6.2f, 22.8f, arrowPaint)
             }
             SpeedDirection.UPLOAD -> {
-                canvas.drawLine(6.5f, 22f, 6.5f, 16.5f, arrowPaint)
-                canvas.drawLine(3.8f, 19.2f, 6.5f, 16.5f, arrowPaint)
-                canvas.drawLine(9.2f, 19.2f, 6.5f, 16.5f, arrowPaint)
+                canvas.drawLine(6.2f, 22.8f, 6.2f, 16f, arrowPaint)
+                canvas.drawLine(3.5f, 18.8f, 6.2f, 16f, arrowPaint)
+                canvas.drawLine(8.9f, 18.8f, 6.2f, 16f, arrowPaint)
             }
             SpeedDirection.IDLE -> Unit
         }
 
-        iconPaint.textSize = 11f
+        iconPaint.textSize = 9.6f
         val unitX = if (reading.direction == SpeedDirection.IDLE) 12f else 17.5f
         canvas.drawText(reading.unit, unitX, 23f, iconPaint)
         return Icon.createWithBitmap(bitmap)
