@@ -144,18 +144,22 @@ class SpeedService : Service() {
         val canvas = Canvas(bitmap)
         canvas.scale(size / 24f, size / 24f)
 
-        // A status icon is only 24dp high. Reserve a fixed top line for
-        // the bold number, with real blank space before the arrow/unit row.
-        // Fit by the rendered glyph bounds as well as the text width:
-        // a text baseline alone is not a reliable measure of padding.
-        iconPaint.textSize = 17.5f
+        // Maximize the number within a 24dp status icon while reserving the
+        // lower row (arrow and unit). The arrow's highest painted point is
+        // about y=15.1dp, including half its stroke; keep a 1dp clear gap.
+        // The bounds/width are measured for every reading, so long values
+        // shrink rather than touching the icon edges or lower-row symbols.
+        val numberTop = 0.55f
+        val maxNumberHeight = 13.5f
+        val maxNumberWidth = 22.8f
+        iconPaint.textSize = 24f
         val numberBounds = android.graphics.Rect()
         iconPaint.getTextBounds(reading.number, 0, reading.number.length, numberBounds)
         val textWidth = iconPaint.measureText(reading.number).coerceAtLeast(1f)
         val glyphHeight = numberBounds.height().coerceAtLeast(1).toFloat()
-        iconPaint.textSize *= minOf(1f, 22f / textWidth, 12f / glyphHeight)
+        iconPaint.textSize *= minOf(1f, maxNumberWidth / textWidth, maxNumberHeight / glyphHeight)
         iconPaint.getTextBounds(reading.number, 0, reading.number.length, numberBounds)
-        canvas.drawText(reading.number, 12f, 0.7f - numberBounds.top, iconPaint)
+        canvas.drawText(reading.number, 12f, numberTop - numberBounds.top, iconPaint)
 
         // A slightly longer arrow (6.8dp shaft vs 5.5dp before), drawn
         // alongside the unit. The second row starts below the number.
