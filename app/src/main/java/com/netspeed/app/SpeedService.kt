@@ -34,9 +34,17 @@ class SpeedService : Service() {
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create("sans-serif-condensed", Typeface.BOLD)
     }
+    private val arrowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 1.8f
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
 
     private var previousSample: TrafficSnapshot? = null
     private var lastReading: Reading? = null
+    private var lastIconReading: StatusIconReading? = null
 
     private val sampleSpeed = object : Runnable {
         override fun run() {
@@ -44,17 +52,21 @@ class SpeedService : Service() {
             val rates = TrafficRateCalculator.calculate(previousSample, current)
             previousSample = current
 
-            // Preserve the existing v1 UI for this phase; separate RX/TX are now
-            // available for the directional icon and notification in later phases.
+            // Phase 2: the notification still reports combined traffic, but the
+            // status icon shows the faster direction (RX or TX) and its arrow.
             val reading = rates?.let { Reading.fromCombinedKbit(it.combinedKbitPerSecond) }
                 ?: Reading(null, R.string.speed_unavailable, "")
+            val iconReading = rates?.let(StatusIconFormatter::fromRates)
 
-            if (reading != lastReading) {
+            // Update when the icon direction changes, even if combined speed
+            // rounds to the same displayed number.
+            if (reading != lastReading || iconReading != lastIconReading) {
                 val text = reading.number?.let { getString(reading.textResource, it) }
                     ?: getString(reading.textResource)
-                val icon = reading.number?.let { drawIcon(it, reading.iconUnit) }
+                val icon = iconReading?.let(::drawIcon)
                 notifications.notify(NOTIFICATION_ID, notification(text, icon))
                 lastReading = reading
+                lastIconReading = iconReading
             }
 
             // Use real elapsed time in the calculation even if this callback was delayed.
@@ -110,20 +122,39 @@ class SpeedService : Service() {
         return builder.build()
     }
 
-    private fun drawIcon(number: String, unit: String): Icon {
+    private fun drawIcon(reading: StatusIconReading): Icon {
         val scale = resources.displayMetrics.density
-        val size = (24 * scale).roundToInt()
+        val size = (24 * scale).roundToInt().coerceAtLeast(24)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.scale(scale, scale)
+        canvas.scale(size / 24f, size / 24f)
 
-        iconPaint.textSize = 13f
-        val width = iconPaint.measureText(number)
-        if (width > 23f) iconPaint.textSize *= 23f / width
-        canvas.drawText(number, 12f, 12f, iconPaint)
-        iconPaint.textSize = 10f
-        canvas.drawText(unit, 12f, 21f, iconPaint)
+        // Bold, larger first line: 17.5dp instead of 13dp. Fit long
+        // numbers to the available width without clipping.
+        iconPaint.textSize = 17.5f
+        val width = iconPaint.measureText(reading.number)
+        if (width > 22f) iconPaint.textSize *= 22f / width
+        canvas.drawText(reading.number, 12f, 15.5f, iconPaint)
 
+        // Draw the arrow as strokes rather than a text glyph; arrow fonts
+        // differ across manufacturers and may become illegible when scaled.
+        when (reading.direction) {
+            SpeedDirection.DOWNLOAD -> {
+                canvas.drawLine(6.5f, 16.5f, 6.5f, 22f, arrowPaint)
+                canvas.drawLine(3.8f, 19.3f, 6.5f, 22f, arrowPaint)
+                canvas.drawLine(9.2f, 19.3f, 6.5f, 22f, arrowPaint)
+            }
+            SpeedDirection.UPLOAD -> {
+                canvas.drawLine(6.5f, 22f, 6.5f, 16.5f, arrowPaint)
+                canvas.drawLine(3.8f, 19.2f, 6.5f, 16.5f, arrowPaint)
+                canvas.drawLine(9.2f, 19.2f, 6.5f, 16.5f, arrowPaint)
+            }
+            SpeedDirection.IDLE -> Unit
+        }
+
+        iconPaint.textSize = 11f
+        val unitX = if (reading.direction == SpeedDirection.IDLE) 12f else 17.5f
+        canvas.drawText(reading.unit, unitX, 23f, iconPaint)
         return Icon.createWithBitmap(bitmap)
     }
 
