@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -18,9 +19,11 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 class SpeedService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -43,7 +46,7 @@ class SpeedService : Service() {
     }
 
     private var previousSample: TrafficSnapshot? = null
-    private var lastReading: Reading? = null
+    private var lastNotificationText: String? = null
     private var lastIconReading: StatusIconReading? = null
 
     private val sampleSpeed = object : Runnable {
@@ -52,20 +55,18 @@ class SpeedService : Service() {
             val rates = TrafficRateCalculator.calculate(previousSample, current)
             previousSample = current
 
-            // Phase 2: the notification still reports combined traffic, but the
-            // status icon shows the faster direction (RX or TX) and its arrow.
-            val reading = rates?.let { Reading.fromCombinedKbit(it.combinedKbitPerSecond) }
-                ?: Reading(null, R.string.speed_unavailable, "")
+            // Phase 3: show RX and TX separately in the notification;
+            // retain the Phase 2 dominant-direction status-bar icon.
+            val notificationText = rates?.let(NotificationSpeedFormatter::format)
+                ?: getString(R.string.speed_unavailable)
             val iconReading = rates?.let(StatusIconFormatter::fromRates)
 
-            // Update when the icon direction changes, even if combined speed
-            // rounds to the same displayed number.
-            if (reading != lastReading || iconReading != lastIconReading) {
-                val text = reading.number?.let { getString(reading.textResource, it) }
-                    ?: getString(reading.textResource)
+            // The individual rates may change without changing the combined
+            // speed or the rounded status icon, so compare notification text too.
+            if (notificationText != lastNotificationText || iconReading != lastIconReading) {
                 val icon = iconReading?.let(::drawIcon)
-                notifications.notify(NOTIFICATION_ID, notification(text, icon))
-                lastReading = reading
+                notifications.notify(NOTIFICATION_ID, notification(notificationText, icon))
+                lastNotificationText = notificationText
                 lastIconReading = iconReading
             }
 
@@ -105,9 +106,23 @@ class SpeedService : Service() {
     }
 
     private fun notification(text: String, icon: Icon? = null): Notification {
+        // Use contrasting teal in light/dark themes. SystemUI can override
+        // styled notification text on some Android manufacturer versions.
+        val isDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        val accentColor = if (isDark) Color.rgb(94, 224, 213) else Color.rgb(0, 112, 112)
+        val coloredText = SpannableString(text).apply {
+            setSpan(ForegroundColorSpan(accentColor), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
         val builder = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(text)
+            .setContentTitle(coloredText)
+            .setColor(accentColor)
+            .setStyle(
+                Notification.BigTextStyle()
+                    .setBigContentTitle(getString(R.string.app_name))
+                    .bigText(coloredText)
+            )
             .setContentIntent(openControls)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -169,26 +184,6 @@ class SpeedService : Service() {
         txBytes = TrafficStats.getTotalTxBytes(),
         elapsedMs = SystemClock.elapsedRealtime(),
     )
-
-    private data class Reading(val number: String?, val textResource: Int, val iconUnit: String) {
-        companion object {
-            fun fromCombinedKbit(kilobitsPerSecond: Double): Reading {
-                val roundedKbits = kilobitsPerSecond.roundToLong()
-                if (roundedKbits < 1_000) {
-                    return Reading(roundedKbits.toString(), R.string.speed_kbit, "k")
-                }
-
-                val megabitsPerSecond = kilobitsPerSecond / 1_000
-                val tenths = (megabitsPerSecond * 10).roundToLong()
-                val number = if (tenths < 100) {
-                    "${tenths / 10}.${tenths % 10}"
-                } else {
-                    megabitsPerSecond.roundToLong().toString()
-                }
-                return Reading(number, R.string.speed_mbit, "M")
-            }
-        }
-    }
 
     companion object {
         const val ACTION_STOP = "com.netspeed.app.STOP"
