@@ -1,56 +1,56 @@
 # Releasing NetSpeed
 
-The goal is a **signed release APK in GitHub Releases** and ordinary debug APKs in GitHub Actions. Android Studio is not necessary on the developer's computer.
+The intended distribution is a **signed release APK** attached to GitHub Releases. GitHub Packages is not required for distributing this standalone Android APK.
 
-## Why release signing is required
+## Why release signing matters
 
-Android requires compatible signing certificates to update an installed app. The existing debug builds may have runner-generated keys that change between workflows. They are only test builds; **do not publish a debug APK as a public release**.
-
-Keep one permanent release keystore and a secure offline backup; use it for every future update. Existing debug users may need to uninstall the debug app once to switch to this signed release.
+Android requires compatible signing certificates for in-place app updates. Existing debug builds may use different temporary runner-generated certificates, so the first signed release may require uninstalling the debug app. From then on, **keep the same release keystore for every update** and safely back it up.
 
 ## One-time signing setup
 
-Generate a long-lived keystore using Java `keytool` in a trusted environment with JDK installed (it does **not** require Android Studio):
+Generate a long-lived keystore in a **trusted** environment with Java `keytool` (Android Studio is not required):
 
 ```sh
 keytool -genkeypair -v -keystore netspeed-release.jks -alias netspeed -keyalg RSA -keysize 3072 -validity 10000
 ```
 
-Use strong passwords, keep a backup outside the repository, and convert the keystore into **one-line Base64** in that trusted environment (Linux example: `base64 -w 0 netspeed-release.jks`). The Base64 value **is sensitive private key material**; never put it into code, issues, pull requests, or chat.
+Store the keystore securely with an offline backup. Convert the file to single-line Base64 locally in that trusted environment (example: `base64 -w 0 netspeed-release.jks`).
 
-Under **GitHub → Settings → Secrets and variables → Actions**, add repository secrets:
+**Never share the keystore file, the Base64 contents or the passwords in a GitHub issue, pull request, repository file, or chat.**
 
-| Name | Value |
+Under **GitHub → Settings → Secrets and variables → Actions** configure:
+
+| Secret | Meaning |
 | --- | --- |
-| `NETSPEED_RELEASE_KEYSTORE_B64` | Base64 content of the release keystore |
+| `NETSPEED_RELEASE_KEYSTORE_B64` | Base64 keystore bytes |
 | `NETSPEED_RELEASE_STORE_PASSWORD` | Keystore password |
-| `NETSPEED_RELEASE_KEY_ALIAS` | Alias (e.g. `netspeed`) |
-| `NETSPEED_RELEASE_KEY_PASSWORD` | Private-key password |
+| `NETSPEED_RELEASE_KEY_ALIAS` | Key alias (e.g. `netspeed`) |
+| `NETSPEED_RELEASE_KEY_PASSWORD` | Key password |
 
-The release workflow exits without publishing if a required secret is missing. Never store an unencrypted keystore in the repository or as a public Actions artifact.
+Without all four secrets, the release workflow fails safely and publishes nothing.
 
-## Releasing a version
+## Publish a signed preview
 
-1. Merge tested changes into `main`.
-2. Increase Android `versionCode` for every release and set `versionName` to the version's semantic number in `app/build.gradle.kts`. For the first preview: `versionCode = 2` and `versionName = "0.1.0"`.
-3. Update `CHANGELOG.md` and wait for the debug build workflow to pass.
-4. **After all signing secrets are configured**, create tag `v0.1.0` on the intended `main` commit and push the tag. The tag triggers **Publish signed release APK**.
-5. The workflow validates tag/version, runs tests, creates a signed APK, verifies its signature, and uploads `NetSpeed-v0.1.0.apk` plus its SHA-256 checksum to **GitHub Releases**, marked as a preview.
-6. Install the release APK and verify it on a real Android 12+ device.
+1. Confirm the target commit is in `main` and the build/test workflow passes.
+2. Increment `versionCode` and set `versionName` in `app/build.gradle.kts`. The first preview is currently configured as `versionCode = 2` and `versionName = "0.1.0"`.
+3. Update [CHANGELOG.md](../CHANGELOG.md).
+4. After configuring signing secrets, create and push tag `v0.1.0` for the intended commit on `main`.
+5. The **Publish signed release APK** workflow validates the tag/version and ancestry, runs tests, signs and verifies the release APK, and attaches `NetSpeed-v0.1.0.apk` and a checksum to a GitHub **pre-release**.
+6. Download the resulting APK to a real Android 12+ phone and verify installation and future updates.
 
-Normal pushes and pull requests do not publish a release. A failing signing step does not publish an unsigned APK. Planned v0.x.y tags are automatically marked pre-release.
+**Do not create a version tag before signing secrets are in place** unless you deliberately want the workflow to fail. Ordinary branch pushes and PRs do not publish releases.
 
-## Before making the repository public
+## Before switching repository visibility
 
-- Review the repo for sensitive values.
-- Choose an open-source license (e.g. MIT or Apache-2.0) and add the approved `LICENSE` text.
-- Test the first signed APK and download link.
-- Only then deliberately change GitHub repository visibility to Public.
+- Review source and commit history for accidentally exposed secrets.
+- Verify the [MIT License](../LICENSE) is in the repository and README reflects it.
+- Test the signed APK and its checksum, then verify the release's download instructions.
+- Change the repository visibility from Private to Public **only when the owner decides to publish**.
 
 ## Troubleshooting
 
-- **Wrong tag:** check `vX.Y.Z` matches `versionName = "X.Y.Z"`.
-- **Missing secrets:** complete the four signing secret settings.
-- **Install/update conflict:** a prior debug installation may use another signing certificate. Back up any data and uninstall debug before installing the signed release.
-- **Invalid signature:** do not distribute the APK until verified.
-- **Private release URL:** GitHub Releases of a private repository are not public downloads.
+- **Tag mismatch:** tag must match `vX.Y.Z` and Android `versionName = "X.Y.Z"`.
+- **Missing secrets:** all four signing secrets are required.
+- **Signature verification fails:** do not distribute; inspect the keystore and configuration.
+- **Cannot update an installed debug APK:** the debug signing key is likely different; uninstall debug (back up any important data first) and install signed APK.
+- **Private release link:** it is visible only to users with repository access until made public.
