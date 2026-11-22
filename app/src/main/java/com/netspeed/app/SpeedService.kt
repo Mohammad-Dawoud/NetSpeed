@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -18,6 +19,9 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import kotlin.math.roundToInt
 
@@ -102,14 +106,22 @@ class SpeedService : Service() {
     }
 
     private fun notification(text: String, icon: Icon? = null): Notification {
+        // Use contrasting teal in light/dark themes. SystemUI can override
+        // styled notification text on some Android manufacturer versions.
+        val isDark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        val accentColor = if (isDark) Color.rgb(94, 224, 213) else Color.rgb(0, 112, 112)
+        val coloredText = SpannableString(text).apply {
+            setSpan(ForegroundColorSpan(accentColor), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
         val builder = Notification.Builder(this, CHANNEL_ID)
-            // Match the reference app's compact reading. Expanded mode uses
-            // BigTextStyle so both directions stay visible on narrow screens.
-            .setContentTitle(text)
+            .setContentTitle(coloredText)
+            .setColor(accentColor)
             .setStyle(
                 Notification.BigTextStyle()
                     .setBigContentTitle(getString(R.string.app_name))
-                    .bigText(text)
+                    .bigText(coloredText)
             )
             .setContentIntent(openControls)
             .setOngoing(true)
