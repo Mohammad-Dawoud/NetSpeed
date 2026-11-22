@@ -5,6 +5,19 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.3.21"
 }
 
+// Release signing is only configured when all credentials are provided by CI.
+// No keystore or password belongs in source control.
+val releaseKeystorePath = System.getenv("NETSPEED_RELEASE_KEYSTORE")
+val releaseStorePassword = System.getenv("NETSPEED_RELEASE_STORE_PASSWORD")
+val releaseKeyAlias = System.getenv("NETSPEED_RELEASE_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("NETSPEED_RELEASE_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseKeystorePath,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.netspeed.app"
     compileSdk = 36
@@ -13,8 +26,28 @@ android {
         applicationId = "com.netspeed.app"
         minSdk = 31
         targetSdk = 31
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.1.0"
+    }
+
+    if (hasReleaseSigning) {
+        signingConfigs {
+            create("netspeedRelease") {
+                storeFile = file(requireNotNull(releaseKeystorePath))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("netspeedRelease")
+            }
+        }
     }
 
     compileOptions {

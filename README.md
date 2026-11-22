@@ -1,16 +1,51 @@
 # NetSpeed
 
-NetSpeed measures the combined upload and download speed across the phone using Android’s `TrafficStats` counters. Tap **Start** to sample once per second while the phone is awake and show the result in an ongoing notification. Tap **Stop** to remove the notification and end sampling. The initial build targets Android 12 (API 31), including the Galaxy S10 on One UI 4.1.
+**A tiny Android app that shows live network speed in your status bar.** No root, account, server, or unnecessary features.
 
-## Build and download
+[![Build debug APK](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml/badge.svg)](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml) · **Android 12+** · **Kotlin**
 
-1. Push this project to a GitHub repository with Actions enabled. The push starts **Build debug APK**. You can also run it from the repository’s **Actions** tab. [GitHub guide to pushing a local project](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github)
-2. Sign in to GitHub and open **Actions → Build debug APK**. Select the latest successful run and download **NetSpeed-debug** from **Artifacts**. [GitHub artifact download guide](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts)
-3. Extract the ZIP and open `app-debug.apk` on your phone. If prompted, allow **Install unknown apps** for the browser or file manager you used, then tap **Install**.
-4. Open **NetSpeed** and tap **Start**. Allow notifications if prompted.
+## Features
 
-GitHub’s runner supplies Java and the Android SDK. The repository includes the Gradle wrapper.
+- **Live status-bar icon** with a large numeric speed indicator and a directional arrow: ↓ for dominant download, ↑ for dominant upload.
+- **Separate notification readings**, e.g. **Down: 6 Mb/s — Up: 0 b/s**.
+- **Automatically scaled units**: b/s, Kb/s and Mb/s in the notification; compact k/M icon units.
+- **One-screen controls**: Start and Stop.
+- **On-device only**: no accounts, analytics, backend, or data collection.
 
-## Status bar behavior
+The icon displays the speed of the dominant direction, **not** the sum of download and upload. Android and One UI determine its final size and visibility.
 
-NetSpeed draws the rounded numeric reading into a small, monochrome notification icon. The icon uses `k` for kbit/s and `M` for Mbit/s. Android and One UI control the icon’s size and visibility and may hide it or show it differently. Swipe down to read the speed in full units in the notification. If you see a notification count or no icon, check **Settings → Notifications → Advanced settings → Show notification icons**. [Samsung notification settings](https://www.samsung.com/us/support/answer/ANS10002521/)
+## Download and install
+
+Once the first signed APK is released, download it from [GitHub Releases](https://github.com/Mohammad-Dawoud/NetSpeed/releases), then open the APK on a phone with **Android 12 (API 31) or newer**.
+
+For current testers, open [Build debug APK](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml), select a successful run, download `NetSpeed-debug` under **Artifacts**, extract the ZIP, and install `app-debug.apk`.
+
+> **Signing note:** debug APKs produced on separate GitHub runners can have different signatures. Android may refuse in-place upgrades between such builds or from debug to the first signed release. Back up any important app data and uninstall a debug installation if required. Once signed releases start, all updates must use the same release key.
+
+## How it works
+
+NetSpeed reads Android's device-wide received/transmitted byte counters through `TrafficStats`. It calculates the differences over **actual elapsed time** to estimate the recent transfer rate, sampling about once per second when the device is awake. It is **not** an internet bandwidth speed test.
+
+The app runs a foreground service with an ongoing notification while started. Android can delay sampling in sleep mode or restrict background activity depending on device settings.
+
+## Privacy and permissions
+
+NetSpeed requests a **foreground service** and declares **notification** permission where applicable. It does not request root or the INTERNET permission. It reads aggregate byte counts—not packet contents, browsing history, or personal connections.
+
+## Develop
+
+No Android Studio installation is necessary for the GitHub Actions build. To build in a compatible Java 17 + Android SDK environment:
+
+```sh
+./gradlew :app:testDebugUnitTest :app:assembleDebug
+```
+
+APK output: `app/build/outputs/apk/debug/app-debug.apk`.
+
+Versions use [Semantic Versioning](https://semver.org/). See [Changelog](CHANGELOG.md), [Releasing](docs/RELEASING.md), and [Contributing](CONTRIBUTING.md).
+
+**Open-source license is not finalized yet.** The repository remains private until a license is selected and the first signed release is ready.
+
+---
+
+*Built for one job: knowing how fast your phone is transferring data.*
