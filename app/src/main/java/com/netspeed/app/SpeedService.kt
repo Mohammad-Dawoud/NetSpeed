@@ -18,6 +18,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -34,14 +35,19 @@ class SpeedService : Service() {
         typeface = Typeface.create("sans-serif-condensed", Typeface.BOLD)
     }
 
-    private var previousSample: TrafficSample? = null
+    private var previousSample: TrafficSnapshot? = null
     private var lastReading: Reading? = null
 
     private val sampleSpeed = object : Runnable {
         override fun run() {
-            val current = TrafficSample.read()
-            val reading = current.readingSince(previousSample)
+            val current = readSnapshot()
+            val rates = TrafficRateCalculator.calculate(previousSample, current)
             previousSample = current
+
+            // Preserve the existing v1 UI for this phase; separate RX/TX are now
+            // available for the directional icon and notification in later phases.
+            val reading = rates?.let { Reading.fromCombinedKbit(it.combinedKbitPerSecond) }
+                ?: Reading(null, R.string.speed_unavailable, "")
 
             if (reading != lastReading) {
                 val text = reading.number?.let { getString(reading.textResource, it) }
@@ -51,7 +57,7 @@ class SpeedService : Service() {
                 lastReading = reading
             }
 
-            // Handler scheduling uses uptime and lets the device sleep between samples.
+            // Use real elapsed time in the calculation even if this callback was delayed.
             handler.postDelayed(this, SAMPLE_INTERVAL_MS)
         }
     }
@@ -59,16 +65,19 @@ class SpeedService : Service() {
     override fun onCreate() {
         super.onCreate()
         createChannel(this)
+        Log.i(TAG, "Speed service created")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            stopSelf(startId)
+            Log.i(TAG, "Speed service stopped explicitly")
+            stopSelf()
             return START_NOT_STICKY
         }
         if (previousSample == null) {
+            if (intent == null) Log.i(TAG, "Speed service restarted by Android")
             startForeground(NOTIFICATION_ID, notification(getString(R.string.speed_measuring)))
-            previousSample = TrafficSample.read()
+            previousSample = readSnapshot()
             handler.postDelayed(sampleSpeed, SAMPLE_INTERVAL_MS)
         }
         return START_STICKY
@@ -79,6 +88,7 @@ class SpeedService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(sampleSpeed)
         stopForeground(STOP_FOREGROUND_REMOVE)
+        Log.i(TAG, "Speed service destroyed")
         super.onDestroy()
     }
 
@@ -117,47 +127,35 @@ class SpeedService : Service() {
         return Icon.createWithBitmap(bitmap)
     }
 
-    private data class TrafficSample(val rxBytes: Long, val txBytes: Long, val elapsedMs: Long) {
-        fun readingSince(previous: TrafficSample?): Reading {
-            if (previous == null || previous.rxBytes < 0 || previous.txBytes < 0 ||
-                rxBytes < previous.rxBytes || txBytes < previous.txBytes ||
-                elapsedMs <= previous.elapsedMs
-            ) {
-                return Reading(null, R.string.speed_unavailable, "")
-            }
+    private fun readSnapshot() = TrafficSnapshot(
+        rxBytes = TrafficStats.getTotalRxBytes(),
+        txBytes = TrafficStats.getTotalTxBytes(),
+        elapsedMs = SystemClock.elapsedRealtime(),
+    )
 
-            val transferredBytes = (rxBytes - previous.rxBytes).toDouble() +
-                (txBytes - previous.txBytes).toDouble()
-            // One kbit/s is one bit/ms.
-            val kilobitsPerSecond = transferredBytes * 8 / (elapsedMs - previous.elapsedMs)
-            val roundedKbits = kilobitsPerSecond.roundToLong()
-            if (roundedKbits < 1_000) {
-                return Reading(roundedKbits.toString(), R.string.speed_kbit, "k")
-            }
-
-            val megabitsPerSecond = kilobitsPerSecond / 1_000
-            val tenths = (megabitsPerSecond * 10).roundToLong()
-            val number = if (tenths < 100) {
-                "${tenths / 10}.${tenths % 10}"
-            } else {
-                megabitsPerSecond.roundToLong().toString()
-            }
-            return Reading(number, R.string.speed_mbit, "M")
-        }
-
+    private data class Reading(val number: String?, val textResource: Int, val iconUnit: String) {
         companion object {
-            fun read(): TrafficSample = TrafficSample(
-                TrafficStats.getTotalRxBytes(),
-                TrafficStats.getTotalTxBytes(),
-                SystemClock.elapsedRealtime(),
-            )
+            fun fromCombinedKbit(kilobitsPerSecond: Double): Reading {
+                val roundedKbits = kilobitsPerSecond.roundToLong()
+                if (roundedKbits < 1_000) {
+                    return Reading(roundedKbits.toString(), R.string.speed_kbit, "k")
+                }
+
+                val megabitsPerSecond = kilobitsPerSecond / 1_000
+                val tenths = (megabitsPerSecond * 10).roundToLong()
+                val number = if (tenths < 100) {
+                    "${tenths / 10}.${tenths % 10}"
+                } else {
+                    megabitsPerSecond.roundToLong().toString()
+                }
+                return Reading(number, R.string.speed_mbit, "M")
+            }
         }
     }
 
-    private data class Reading(val number: String?, val textResource: Int, val iconUnit: String)
-
     companion object {
         const val ACTION_STOP = "com.netspeed.app.STOP"
+        private const val TAG = "NetSpeed"
         private const val CHANNEL_ID = "transfer_speed"
         private const val NOTIFICATION_ID = 1
         private const val SAMPLE_INTERVAL_MS = 1_000L

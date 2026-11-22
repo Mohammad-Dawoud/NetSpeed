@@ -26,6 +26,9 @@ jobs:
             "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;35.0.0'
           fi
 
+      - name: Test traffic calculations
+        run: bash ./gradlew --no-daemon :app:testDebugUnitTest
+
       - name: Build debug APK
         run: bash ./gradlew --no-daemon :app:assembleDebug
 
