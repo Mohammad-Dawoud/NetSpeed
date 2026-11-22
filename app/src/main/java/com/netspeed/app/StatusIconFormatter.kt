@@ -15,8 +15,8 @@ internal object StatusIconFormatter {
     /**
      * A direction arrow must describe the number shown beside it.
      * Therefore, show the dominant direction's rate in the icon, not the
-     * download + upload total. The existing notification continues to show
-     * the combined rate until Phase 3.
+     * download + upload total. The notification can independently show
+     * both directions without changing this icon.
      */
     fun fromRates(rates: TransferRates): StatusIconReading {
         val direction = when {
