@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NetSpeed</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="speed_channel">Transfer speed</string>
+    <string name="speed_measuring">Measuring transfer speed…</string>
+    <string name="speed_unavailable">Transfer speed unavailable</string>
+    <string name="speed_kbit">%1$s kbit/s</string>
+    <string name="speed_mbit">%1$s Mbit/s</string>
+</resources>
