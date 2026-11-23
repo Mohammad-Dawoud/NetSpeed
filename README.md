@@ -11,7 +11,7 @@
 
 ![Illustration of NetSpeed status-bar speed indicator](docs/images/1.png)
 
-> **Preview illustration / The final notification icon size and positioning depend on your Android device and One UI settings.  
+> **Preview illustration** The final notification icon size and positioning depend on your Android device and One UI settings.  
 
 ---
 
