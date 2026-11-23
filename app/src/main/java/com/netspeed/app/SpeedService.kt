@@ -16,6 +16,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.Icon
 import android.net.TrafficStats
 import android.os.Handler
+import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
@@ -49,11 +50,22 @@ class SpeedService : Service() {
     private var lastNotificationText: String? = null
     private var lastIconReading: StatusIconReading? = null
 
+    private val localBinder = LocalBinder()
+    inner class LocalBinder : Binder() {
+        val service: SpeedService get() = this@SpeedService
+    }
+
+    var isMonitoring: Boolean = false
+        private set
+    var currentRates: TransferRates? = null
+        private set
+
     private val sampleSpeed = object : Runnable {
         override fun run() {
             val current = readSnapshot()
             val rates = TrafficRateCalculator.calculate(previousSample, current)
             previousSample = current
+            currentRates = rates
 
             // Phase 3: show RX and TX separately in the notification;
             // retain the Phase 2 dominant-direction status-bar icon.
@@ -84,21 +96,34 @@ class SpeedService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             Log.i(TAG, "Speed service stopped explicitly")
+            handler.removeCallbacks(sampleSpeed)
+            isMonitoring = false
+            previousSample = null
+            currentRates = null
+            lastNotificationText = null
+            lastIconReading = null
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
         }
-        if (previousSample == null) {
+        if (!isMonitoring) {
             if (intent == null) Log.i(TAG, "Speed service restarted by Android")
             startForeground(NOTIFICATION_ID, notification(getString(R.string.speed_measuring)))
+            isMonitoring = true
+            currentRates = null
             previousSample = readSnapshot()
+            handler.removeCallbacks(sampleSpeed)
             handler.postDelayed(sampleSpeed, SAMPLE_INTERVAL_MS)
         }
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
+    override fun onBind(intent: Intent?): IBinder = localBinder
 
     override fun onDestroy() {
+        isMonitoring = false
+        currentRates = null
+        previousSample = null
         handler.removeCallbacks(sampleSpeed)
         stopForeground(STOP_FOREGROUND_REMOVE)
         Log.i(TAG, "Speed service destroyed")
