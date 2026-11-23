@@ -40,7 +40,7 @@ jobs:
           expected_code=$(sed -nE 's/^[[:space:]]*versionCode = ([0-9]+)/\1/p' app/build.gradle.kts)
           test -n "$expected_name"
           test -n "$expected_code"
-          package_info=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | head -n 1)
+          package_info=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep '^package:')
           [[ "$package_info" == *"name='com.netspeed.app'"* ]]
           [[ "$package_info" == *"versionCode='$expected_code'"* ]]
           [[ "$package_info" == *"versionName='$expected_name'"* ]]
