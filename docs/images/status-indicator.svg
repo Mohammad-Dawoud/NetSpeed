@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="340" viewBox="0 0 1120 340" role="img" aria-labelledby="title desc">
+<title id="title">NetSpeed status-bar indicator illustration</title><desc id="desc">An example 18 megabits per second download reading with a downward arrow in a compact Android status bar icon.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0d1727"/><stop offset="1" stop-color="#17283b"/></linearGradient>
+  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#42d9ce"/><stop offset="1" stop-color="#7ce3c9"/></linearGradient>
+</defs>
+<rect width="1120" height="340" rx="24" fill="url(#bg)"/>
+<rect x="42" y="44" width="510" height="252" rx="25" fill="#1e2b3e" stroke="#33475b" stroke-width="2"/>
+<text x="75" y="88" font-family="Arial,sans-serif" font-size="19" fill="#a9b9c9">Android status bar · illustrative</text>
+<rect x="75" y="112" width="440" height="112" rx="15" fill="#101924"/>
+<text x="101" y="151" font-family="Arial,sans-serif" font-size="20" fill="#dce7f1">10:13</text>
+<path d="M 225 145 h 31 m -29 7 h 23 m -22 7 h 15" stroke="#e7f4f8" stroke-width="3" fill="none" stroke-linecap="round"/>
+<rect x="276" y="122" width="54" height="94" rx="9" fill="#263e4b"/>
+<text x="303" y="163" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="40" fill="#ffffff">18</text>
+<path d="M288 173 V197 M281 189 L288 197 L295 189" stroke="#61e0d1" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="311" y="202" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#61e0d1">M</text>
+<rect x="392" y="131" width="25" height="47" rx="5" fill="none" stroke="#f2f6fb" stroke-width="3"/>
+<rect x="398" y="127" width="13" height="4" rx="2" fill="#f2f6fb"/>
+<rect x="398" y="143" width="13" height="29" rx="2" fill="#65e5bb"/>
+<text x="76" y="260" font-family="Arial,sans-serif" font-size="18" fill="#9cb2c4">Number + direction + unit</text>
+<text x="601" y="108" font-family="Arial,sans-serif" font-size="20" letter-spacing="3" font-weight="700" fill="url(#accent)">LIVE INDICATOR</text>
+<text x="601" y="165" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#ffffff">Speed at a glance</text>
+<text x="601" y="207" font-family="Arial,sans-serif" font-size="22" fill="#d2e1ec">↓ Download dominates</text>
+<text x="601" y="244" font-family="Arial,sans-serif" font-size="22" fill="#d2e1ec">↑ Upload dominates</text>
+<text x="601" y="284" font-family="Arial,sans-serif" font-size="15" fill="#91a9be">UI size and layout depend on Android / One UI</text>
+</svg>
