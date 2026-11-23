@@ -16,7 +16,7 @@ keytool -genkeypair -v -keystore netspeed-release.jks -alias netspeed -keyalg RS
 
 Store the keystore securely with an offline backup. Convert the file to single-line Base64 locally in that trusted environment (example: `base64 -w 0 netspeed-release.jks`).
 
-**Never share the keystore file, the Base64 contents or the passwords in a GitHub issue, pull request, repository file, or chat.**
+**Never share the keystore file, the Base64 contents or the passwords in a GitHub issue, pull request, repository file, or chat. Do not run signing workflows with untrusted code and keep a secure offline backup of the signing key.**
 
 Under **GitHub → Settings → Secrets and variables → Actions** configure:
 
@@ -29,13 +29,13 @@ Under **GitHub → Settings → Secrets and variables → Actions** configure:
 
 Without all four secrets, the release workflow fails safely and publishes nothing.
 
-## Publish a signed preview
+## Publish the first stable release
 
 1. Confirm the target commit is in `main` and the build/test workflow passes.
-2. Increment `versionCode` and set `versionName` in `app/build.gradle.kts`. The first preview is currently configured as `versionCode = 2` and `versionName = "0.1.0"`.
+2. Increment `versionCode` and set `versionName` in `app/build.gradle.kts`. The first stable release is configured as `versionCode = 3` and `versionName = "1.0.0"`.
 3. Update [CHANGELOG.md](../CHANGELOG.md).
-4. After configuring signing secrets, create and push tag `v0.1.0` for the intended commit on `main`.
-5. The **Publish signed release APK** workflow validates the tag/version and ancestry, runs tests, signs and verifies the release APK, and attaches `NetSpeed-v0.1.0.apk` and a checksum to a GitHub **pre-release**.
+4. After configuring signing secrets, create and push tag `v1.0.0` for the intended commit on `main`.
+5. The **Publish signed release APK** workflow validates the tag/version and ancestry, runs tests, signs and verifies the release APK, and attaches `NetSpeed-v1.0.0.apk` and a checksum to a normal GitHub **Release** (not a pre-release).
 6. Download the resulting APK to a real Android 12+ phone and verify installation and future updates.
 
 **Do not create a version tag before signing secrets are in place** unless you deliberately want the workflow to fail. Ordinary branch pushes and PRs do not publish releases.

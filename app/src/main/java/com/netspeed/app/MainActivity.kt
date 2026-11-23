@@ -161,7 +161,7 @@ class MainActivity : Activity() {
 
     @Suppress("DEPRECATION")
     private fun appVersion(): String =
-        packageManager.getPackageInfo(packageName, 0).versionName ?: "0.1.0"
+        packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
 
     companion object {
         private const val REPOSITORY_URL = "https://github.com/Mohammad-Dawoud/NetSpeed"

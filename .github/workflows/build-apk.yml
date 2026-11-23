@@ -38,3 +38,23 @@ jobs:
           name: NetSpeed-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Signing smoke test: this key exists only on this CI runner, is never
+      # uploaded and is NOT the long-lived key used to publish releases.
+      - name: Test signed release build with a disposable CI key
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -genkeypair -noprompt -alias netspeed-ci-test \
+            -keyalg RSA -keysize 2048 -validity 2 \
+            -keystore "$RUNNER_TEMP/netspeed-ci-test.jks" \
+            -storepass 'netspeed-ci-test-only' \
+            -keypass 'netspeed-ci-test-only' \
+            -dname 'CN=NetSpeed CI Test'
+          export NETSPEED_RELEASE_KEYSTORE="$RUNNER_TEMP/netspeed-ci-test.jks"
+          export NETSPEED_RELEASE_STORE_PASSWORD='netspeed-ci-test-only'
+          export NETSPEED_RELEASE_KEY_ALIAS='netspeed-ci-test'
+          export NETSPEED_RELEASE_KEY_PASSWORD='netspeed-ci-test-only'
+          bash ./gradlew --no-daemon :app:assembleRelease
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            --min-sdk-version 31 app/build/outputs/apk/release/app-release.apk

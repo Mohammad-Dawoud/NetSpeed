@@ -4,14 +4,17 @@ NetSpeed uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-- Prepare GitHub Release automation, reproducible release signing, and public documentation.
+- No unreleased changes yet.
 
-## [0.1.0] — Planned preview, not published
+## [1.0.0] — First stable public release (pending signing and publication)
 
-- Real-time Android status-bar speed icon, with dominant download/upload direction indicator.
-- Enlarged, readable speed number with reserved space for unit and arrow.
-- Notification shows individual download and upload rates: e.g. `Down: 6 Mb/s — Up: 0 b/s`.
-- Uses Android `TrafficStats` sampled with actual elapsed time, a foreground service, and simple Start/Stop controls.
-- Unit tests and APK builds through GitHub Actions.
+- Minimal dark Android UI with live download and upload readings.
+- One circular 150dp power button, red when stopped and green while monitoring.
+- Right-side menu with app description, GitHub repository, issue reporting and version.
+- Real-time Android status-bar speed icon with dominant download/upload direction arrows.
+- Bold, readable icon number with separate arrow and unit.
+- Separate download/upload notification values with compact b/s, Kb/s and Mb/s units.
+- Device-wide `TrafficStats` measurement using actual elapsed sample time.
+- Foreground service with Start/Stop control, automated unit tests and GitHub Actions builds.
 
-A published release does not exist until its signed APK and tag are created.
+This release is **not published** until a permanently signed APK passes verification and is attached to tag `v1.0.0`.
