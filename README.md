@@ -9,7 +9,7 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-Native-7F52FF)
 [![MIT License](https://img.shields.io/badge/License-MIT-9bd7d2)](LICENSE)
 
-![Illustration of NetSpeed status-bar speed indicator](docs/images/netspeed-hero.webp)
+![Illustration of NetSpeed status-bar speed indicator](docs/images/1.png)
 
 > **Preview illustration / صورة توضيحية:** The final notification icon size and positioning depend on your Android device and One UI settings.  
 > يظهر حجم الأيقونة وموقعها بحسب نظام أندرويد وإعدادات الهاتف.
@@ -28,7 +28,7 @@
 
 ### Notification preview
 
-![Illustration of NetSpeed separate download and upload notification readings](docs/images/netspeed-status.webp)
+![Illustration of NetSpeed separate download and upload notification readings](docs/images/2.png)
 
 *Illustrative preview based on the tested design; real values change continuously.*
 
@@ -78,11 +78,11 @@ See [Contributing](CONTRIBUTING.md), [Changelog](CHANGELOG.md), and [Release gui
 
 **عرض السرعة في شريط الحالة:**
 
-![رسم توضيحي لمؤشر السرعة واتجاهها في شريط الحالة](docs/images/netspeed-hero.webp)
+![رسم توضيحي لمؤشر السرعة واتجاهها في شريط الحالة](docs/images/1.png)
 
 **تفاصيل سرعتي التنزيل والرفع داخل الإشعار:**
 
-![رسم توضيحي للإشعار المنفصل للتنزيل والرفع](docs/images/netspeed-status.webp)
+![رسم توضيحي للإشعار المنفصل للتنزيل والرفع](docs/images/2.png)
 
 *الصور توضيحية مستندة إلى شكل التطبيق الذي جرى اختباره، وقد يختلف العرض النهائي بحسب الهاتف.*
 
