@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="page_bg">#0C1422</color>
+    <color name="header_bg">#18263B</color>
+    <color name="drawer_bg">#223249</color>
+    <color name="text_primary">#F6F8FC</color>
+    <color name="text_secondary">#B6C3D3</color>
+    <color name="download_accent">#29D4A5</color>
+    <color name="upload_accent">#56B4FF</color>
+    <color name="line_divider">#394A61</color>
+</resources>
