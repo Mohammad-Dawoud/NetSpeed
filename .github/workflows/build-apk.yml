@@ -32,9 +32,43 @@ jobs:
       - name: Build debug APK
         run: bash ./gradlew --no-daemon :app:assembleDebug
 
+      - name: Verify version and package in built APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_name=$(sed -nE 's/^[[:space:]]*versionName = "([^"]+)"/\1/p' app/build.gradle.kts)
+          expected_code=$(sed -nE 's/^[[:space:]]*versionCode = ([0-9]+)/\1/p' app/build.gradle.kts)
+          test -n "$expected_name"
+          test -n "$expected_code"
+          package_info=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep '^package:')
+          [[ "$package_info" == *"name='com.netspeed.app'"* ]]
+          [[ "$package_info" == *"versionCode='$expected_code'"* ]]
+          [[ "$package_info" == *"versionName='$expected_name'"* ]]
+          echo "Validated NetSpeed APK version $expected_name (code $expected_code)"
+
       - name: Upload APK
         uses: actions/upload-artifact@v6
         with:
           name: NetSpeed-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Signing smoke test: this key exists only on this CI runner, is never
+      # uploaded and is NOT the long-lived key used to publish releases.
+      - name: Test signed release build with a disposable CI key
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -genkeypair -noprompt -alias netspeed-ci-test \
+            -keyalg RSA -keysize 2048 -validity 2 \
+            -keystore "$RUNNER_TEMP/netspeed-ci-test.jks" \
+            -storepass 'netspeed-ci-test-only' \
+            -keypass 'netspeed-ci-test-only' \
+            -dname 'CN=NetSpeed CI Test'
+          export NETSPEED_RELEASE_KEYSTORE="$RUNNER_TEMP/netspeed-ci-test.jks"
+          export NETSPEED_RELEASE_STORE_PASSWORD='netspeed-ci-test-only'
+          export NETSPEED_RELEASE_KEY_ALIAS='netspeed-ci-test'
+          export NETSPEED_RELEASE_KEY_PASSWORD='netspeed-ci-test-only'
+          bash ./gradlew --no-daemon :app:assembleRelease
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            --min-sdk-version 31 app/build/outputs/apk/release/app-release.apk

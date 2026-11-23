@@ -22,7 +22,7 @@
 - **Live speed indicator:** a bold number in a compact status-bar notification icon, updated approximately once a second while awake.
 - **Direction arrows:** ↓ when downloads dominate, ↑ when uploads dominate. The icon's number represents the **dominant direction**, not the sum.
 - **Separate notification readings:** e.g. **Down: 18 Mb/s — Up: 110 Kb/s**, with automatic b/s, Kb/s and Mb/s units.
-- **Simple controls:** start or stop monitoring from a single screen.
+- **Simple controls:** one circular red/green power button starts or stops monitoring.
 - **Private by design:** no root, account, ads, analytics, or server. No INTERNET permission.
 
 ### Notification preview
@@ -33,11 +33,11 @@
 
 ### Get NetSpeed
 
-**Signed preview releases:** [GitHub Releases](https://github.com/Mohammad-Dawoud/NetSpeed/releases) — the first signed `v0.1.0` preview is **not published yet**. It will appear here after release-key setup and testing.
+**Official signed APK:** [GitHub Releases](https://github.com/Mohammad-Dawoud/NetSpeed/releases) — the first stable version will be **`v1.0.0`**, available after signing-key setup and final installation testing.
 
 **Debug builds for testers:** [GitHub Actions](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml) → successful build → **Artifacts** → `NetSpeed-debug` → extract `app-debug.apk`.
 
-**Compatibility:** Android 12 (API 31) or newer. Tested during development on Samsung Galaxy S10 / Android 12 / One UI 4.1.
+**Compatibility:** Android 12 (API 31) or newer; targets Android 13 (API 33). Android 13+ users should allow notification permission when starting monitoring. Tested on Samsung Galaxy S10 / Android 12 / One UI 4.1.
 
 > Debug APKs from different build runners may have incompatible signing certificates. Moving to the first permanently signed release can require uninstalling an older debug build. Subsequent updates must use the same release signing key.
 
@@ -70,7 +70,7 @@ See [Contributing](CONTRIBUTING.md), [Changelog](CHANGELOG.md), and [Release gui
 - **مراقبة مباشرة للسرعة:** رقم واضح داخل أيقونة شريط الحالة يُحدّث تقريبًا كل ثانية أثناء نشاط الجهاز.
 - **توضيح اتجاه النقل:** السهم **↓** للتنزيل والسهم **↑** للرفع. الرقم في الأيقونة يمثّل سرعة الاتجاه الأعلى، وليس مجموع الاتجاهين.
 - **فصل التنزيل والرفع:** إشعار يعرض السرعتين بصورة مستقلة مثل **Down: 18 Mb/s — Up: 110 Kb/s**، مع اختيار الوحدة المناسبة تلقائيًا.
-- **واجهة بسيطة:** زرا Start وStop لتشغيل المراقبة وإيقافها.
+- **واجهة بسيطة:** زر طاقة دائري واحد، أحمر عند الإيقاف وأخضر عند التشغيل.
 - **احترام الخصوصية:** لا يحتاج إلى Root أو حساب أو خادم، ولا يجمع بيانات الاستخدام أو يطلب صلاحية الاتصال بالإنترنت.
 
 ### صور توضيحية
@@ -87,11 +87,11 @@ See [Contributing](CONTRIBUTING.md), [Changelog](CHANGELOG.md), and [Release gui
 
 ### التنزيل والتثبيت
 
-ستُنشر ملفات APK الرسمية الموقّعة في صفحة [Releases](https://github.com/Mohammad-Dawoud/NetSpeed/releases) بعد إكمال إعداد التوقيع واختبار الإصدار الأول `v0.1.0`.
+سيُنشر أول إصدار مستقر **`v1.0.0`** بصيغة APK موقّعة في صفحة [Releases](https://github.com/Mohammad-Dawoud/NetSpeed/releases) بعد إعداد مفتاح التوقيع وإجراء اختبار التثبيت النهائي.
 
 للتجربة حاليًا، افتح صفحة [GitHub Actions](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml)، واختر عملية بناء ناجحة، ثم حمّل `NetSpeed-debug` من قسم Artifacts واستخرج ملف `app-debug.apk` وثبّته.
 
-**متطلبات التشغيل:** Android 12 أو أحدث. جرى اختبار التطبيق أثناء التطوير على Samsung Galaxy S10 بنظام Android 12 وواجهة One UI 4.1.
+**متطلبات التشغيل:** Android 12 أو أحدث، ويستهدف التطبيق Android 13 (API 33). في Android 13 والإصدارات الأحدث، يجب السماح بإشعارات التطبيق لعرض سرعة الشبكة في شريط الحالة. جرى اختبار التطبيق على Samsung Galaxy S10 بنظام Android 12 وواجهة One UI 4.1.
 
 **ملاحظة مهمة:** قد يتطلب الانتقال من نسخة Debug إلى النسخة الرسمية الموقّعة حذف النسخة القديمة إذا اختلف توقيعها الرقمي. وتستخدم الإصدارات الرسمية اللاحقة المفتاح نفسه للسماح بالتحديث.
 

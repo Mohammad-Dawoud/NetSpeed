@@ -7,3 +7,10 @@ build/
 .signing/
 *.jks
 *.keystore
+.env
+.env.*
+*.p12
+*.pfx
+*.pem
+*.key
+*.apk

@@ -2,12 +2,15 @@ package com.netspeed.app
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -96,14 +99,47 @@ class MainActivity : Activity() {
         val intent = Intent(this, SpeedService::class.java)
         if (speedService?.isMonitoring == true || requestedStart) {
             requestedStart = false
-            // Deliver Stop to the existing service without starting another
-            // foreground-service lifecycle unnecessarily.
+            // Deliver Stop to the existing foreground service.
             startService(intent.setAction(SpeedService.ACTION_STOP))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            // Android 13+: the status-bar indicator requires a visible
+            // notification. Ask only when the user taps the power button.
+            requestPermissions(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                NOTIFICATION_PERMISSION_REQUEST
+            )
         } else {
-            requestedStart = true
-            startForegroundService(intent)
+            startMonitoring()
         }
         refreshScreen()
+    }
+
+    private fun startMonitoring() {
+        requestedStart = true
+        startForegroundService(Intent(this, SpeedService::class.java))
+    }
+
+    @Deprecated("Legacy Activity permission result callback; no AndroidX dependency required")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST) {
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                startMonitoring()
+            } else {
+                showInfo(
+                    getString(R.string.notification_permission_title),
+                    getString(R.string.notification_permission_body)
+                )
+            }
+            refreshScreen()
+        }
     }
 
     private fun refreshScreen() {
@@ -161,9 +197,10 @@ class MainActivity : Activity() {
 
     @Suppress("DEPRECATION")
     private fun appVersion(): String =
-        packageManager.getPackageInfo(packageName, 0).versionName ?: "0.1.0"
+        packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
 
     companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST = 100
         private const val REPOSITORY_URL = "https://github.com/Mohammad-Dawoud/NetSpeed"
         private const val ISSUES_URL = "https://github.com/Mohammad-Dawoud/NetSpeed/issues"
     }
