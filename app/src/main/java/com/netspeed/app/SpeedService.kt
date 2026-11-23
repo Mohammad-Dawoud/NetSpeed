@@ -57,7 +57,7 @@ class SpeedService : Service() {
 
     var isMonitoring: Boolean = false
         private set
-    var currentRates: TransferRates? = null
+    internal var currentRates: TransferRates? = null
         private set
 
     private val sampleSpeed = object : Runnable {

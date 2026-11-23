@@ -96,7 +96,7 @@ class MainActivity : Activity() {
                 .setPositiveButton(R.string.developer_profile) { _, _ ->
                     openUrl(DEVELOPER_URL)
                 }
-                .setNegativeButton(android.R.string.close, null)
+                .setNegativeButton(R.string.close_menu, null)
                 .show()
         }
         requireViewById<TextView>(R.id.drawer_version).text =
