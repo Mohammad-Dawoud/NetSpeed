@@ -37,7 +37,7 @@
 
 **Debug builds for testers:** [GitHub Actions](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml) → successful build → **Artifacts** → `NetSpeed-debug` → extract `app-debug.apk`.
 
-**Compatibility:** Android 12 (API 31) or newer. Tested during development on Samsung Galaxy S10 / Android 12 / One UI 4.1.
+**Compatibility:** Android 12 (API 31) or newer; targets Android 13 (API 33). Android 13+ users should allow notification permission when starting monitoring. Tested on Samsung Galaxy S10 / Android 12 / One UI 4.1.
 
 > Debug APKs from different build runners may have incompatible signing certificates. Moving to the first permanently signed release can require uninstalling an older debug build. Subsequent updates must use the same release signing key.
 
@@ -91,7 +91,7 @@ See [Contributing](CONTRIBUTING.md), [Changelog](CHANGELOG.md), and [Release gui
 
 للتجربة حاليًا، افتح صفحة [GitHub Actions](https://github.com/Mohammad-Dawoud/NetSpeed/actions/workflows/build-apk.yml)، واختر عملية بناء ناجحة، ثم حمّل `NetSpeed-debug` من قسم Artifacts واستخرج ملف `app-debug.apk` وثبّته.
 
-**متطلبات التشغيل:** Android 12 أو أحدث. جرى اختبار التطبيق أثناء التطوير على Samsung Galaxy S10 بنظام Android 12 وواجهة One UI 4.1.
+**متطلبات التشغيل:** Android 12 أو أحدث، ويستهدف التطبيق Android 13 (API 33). في Android 13 والإصدارات الأحدث، يجب السماح بإشعارات التطبيق لعرض سرعة الشبكة في شريط الحالة. جرى اختبار التطبيق على Samsung Galaxy S10 بنظام Android 12 وواجهة One UI 4.1.
 
 **ملاحظة مهمة:** قد يتطلب الانتقال من نسخة Debug إلى النسخة الرسمية الموقّعة حذف النسخة القديمة إذا اختلف توقيعها الرقمي. وتستخدم الإصدارات الرسمية اللاحقة المفتاح نفسه للسماح بالتحديث.
 

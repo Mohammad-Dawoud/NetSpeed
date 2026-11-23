@@ -11,6 +11,8 @@
     <string name="download_label">Download</string>
     <string name="upload_label">Upload</string>
     <string name="zero_speed">0 b/s</string>
+    <string name="notification_permission_title">Enable notifications</string>
+    <string name="notification_permission_body">NetSpeed needs notification permission to show live speed in your status bar. Enable notifications for NetSpeed in Android Settings, then tap the power button again.</string>
     <string name="start_monitoring">Start Monitoring</string>
     <string name="stop_monitoring">Stop Monitoring</string>
     <string name="monitoring_on">Monitoring on</string>
