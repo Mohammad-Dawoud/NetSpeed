@@ -130,26 +130,23 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Circular 200dp toggle, with a proportionally scaled power icon.
-                 Its center is 100dp higher than the previous 100dp button:
-                 old center = 96 + 50 = 146dp from bottom;
-                 new center = 146 + 100 = 246dp from bottom.
-                 Therefore bottom margin = 246 - 100 = 146dp.
-                 Accessibility text remains dynamic in MainActivity. -->
+            <!-- 150dp circular power toggle. Preserve the approved center
+                 at 246dp above the bottom: 171dp margin + 75dp radius.
+                 The power icon scales with the button; TalkBack text is dynamic. -->
             <FrameLayout
                 android:id="@+id/power_button"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
                 android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="146dp"
+                android:layout_marginBottom="171dp"
                 android:background="@drawable/bg_button_inactive"
                 android:clickable="true"
                 android:focusable="true"
                 android:contentDescription="@string/start_monitoring">
 
                 <ImageView
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
+                    android:layout_width="66dp"
+                    android:layout_height="66dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_power"
                     android:contentDescription="@null"
