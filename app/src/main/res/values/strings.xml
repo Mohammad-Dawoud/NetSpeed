@@ -13,16 +13,15 @@
     <string name="zero_speed">0 b/s</string>
     <string name="start_monitoring">Start Monitoring</string>
     <string name="stop_monitoring">Stop Monitoring</string>
+    <string name="monitoring_on">Monitoring on</string>
+    <string name="monitoring_off">Monitoring off</string>
     <string name="open_menu">Open menu</string>
     <string name="close_menu">Close menu</string>
     <string name="about_title">About the app</string>
     <string name="about_body">NetSpeed is a simple Android network traffic monitor. It displays current download and upload rates in the status bar and notification, without accounts or analytics.</string>
-    <string name="useful_links">Useful links</string>
+    <string name="report_issue">Report an issue</string>
     <string name="version_label">App version</string>
     <string name="version_value">Version %1$s</string>
     <string name="github_repository">GitHub Repository</string>
-    <string name="developer_info">Developer information</string>
-    <string name="developer_description">Developer: Mohammad S. Dawoud\nGitHub: Mohammad-Dawoud</string>
-    <string name="developer_profile">GitHub profile</string>
     <string name="made_in_palestine">Made By M.S.D in 🇵🇸</string>
 </resources>

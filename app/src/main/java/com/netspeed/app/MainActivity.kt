@@ -12,8 +12,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.view.View
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 
 /**
@@ -29,8 +27,7 @@ class MainActivity : Activity() {
 
     private lateinit var downloadValue: TextView
     private lateinit var uploadValue: TextView
-    private lateinit var powerButton: LinearLayout
-    private lateinit var powerLabel: TextView
+    private lateinit var powerButton: View
     private lateinit var drawerOverlay: View
 
     private val refresh = object : Runnable {
@@ -60,7 +57,6 @@ class MainActivity : Activity() {
         downloadValue = requireViewById(R.id.download_value)
         uploadValue = requireViewById(R.id.upload_value)
         powerButton = requireViewById(R.id.power_button)
-        powerLabel = requireViewById(R.id.power_label)
         drawerOverlay = requireViewById(R.id.drawer_overlay)
 
         powerButton.setOnClickListener { toggleMonitoring() }
@@ -68,37 +64,8 @@ class MainActivity : Activity() {
         requireViewById<View>(R.id.drawer_scrim).setOnClickListener { closeDrawer() }
         requireViewById<View>(R.id.drawer_close).setOnClickListener { closeDrawer() }
 
-        requireViewById<View>(R.id.nav_about).setOnClickListener {
-            showInfo(getString(R.string.about_title), getString(R.string.about_body))
-        }
-        requireViewById<View>(R.id.nav_links).setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.useful_links)
-                .setItems(arrayOf("GitHub repository", "Releases", "Report an issue")) { _, which ->
-                    val urls = arrayOf(
-                        REPOSITORY_URL,
-                        "$REPOSITORY_URL/releases",
-                        "$REPOSITORY_URL/issues"
-                    )
-                    openUrl(urls[which])
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
-        requireViewById<View>(R.id.nav_version).setOnClickListener {
-            showInfo(getString(R.string.version_label), getString(R.string.version_value, appVersion()))
-        }
         requireViewById<View>(R.id.nav_repository).setOnClickListener { openUrl(REPOSITORY_URL) }
-        requireViewById<View>(R.id.nav_developer).setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.developer_info)
-                .setMessage(R.string.developer_description)
-                .setPositiveButton(R.string.developer_profile) { _, _ ->
-                    openUrl(DEVELOPER_URL)
-                }
-                .setNegativeButton(R.string.close_menu, null)
-                .show()
-        }
+        requireViewById<View>(R.id.nav_report_issue).setOnClickListener { openUrl(ISSUES_URL) }
         requireViewById<TextView>(R.id.drawer_version).text =
             getString(R.string.version_value, appVersion())
 
@@ -129,8 +96,8 @@ class MainActivity : Activity() {
         val intent = Intent(this, SpeedService::class.java)
         if (speedService?.isMonitoring == true || requestedStart) {
             requestedStart = false
-            // Ensure a stop request reaches even an already-running foreground
-            // service. Never call startForegroundService for a STOP action.
+            // Deliver Stop to the existing service without starting another
+            // foreground-service lifecycle unnecessarily.
             startService(intent.setAction(SpeedService.ACTION_STOP))
         } else {
             requestedStart = true
@@ -143,6 +110,7 @@ class MainActivity : Activity() {
         val running = speedService?.isMonitoring == true
         if (running) requestedStart = false
         val rates = if (running) speedService?.currentRates else null
+
         downloadValue.text = rates?.let {
             NotificationSpeedFormatter.formatRate(it.downloadKbitPerSecond)
         } ?: if (running) "—" else getString(R.string.zero_speed)
@@ -154,8 +122,11 @@ class MainActivity : Activity() {
         powerButton.setBackgroundResource(
             if (showRunning) R.drawable.bg_button_active else R.drawable.bg_button_inactive
         )
-        powerLabel.setText(if (showRunning) R.string.stop_monitoring else R.string.start_monitoring)
-        powerButton.contentDescription = powerLabel.text
+        // The button is icon-only, so announce the correct action to TalkBack.
+        powerButton.contentDescription =
+            getString(if (showRunning) R.string.stop_monitoring else R.string.start_monitoring)
+        powerButton.stateDescription =
+            getString(if (showRunning) R.string.monitoring_on else R.string.monitoring_off)
     }
 
     private fun openDrawer() {
@@ -181,11 +152,10 @@ class MainActivity : Activity() {
     }
 
     private fun openUrl(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
-            startActivity(intent)
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         } catch (_: android.content.ActivityNotFoundException) {
-            showInfo(getString(R.string.useful_links), url)
+            showInfo(getString(R.string.github_repository), url)
         }
     }
 
@@ -195,6 +165,6 @@ class MainActivity : Activity() {
 
     companion object {
         private const val REPOSITORY_URL = "https://github.com/Mohammad-Dawoud/NetSpeed"
-        private const val DEVELOPER_URL = "https://github.com/Mohammad-Dawoud"
+        private const val ISSUES_URL = "https://github.com/Mohammad-Dawoud/NetSpeed/issues"
     }
 }
